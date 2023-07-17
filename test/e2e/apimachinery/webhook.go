@@ -871,7 +871,7 @@ var _ = SIGDescribe("AdmissionWebhook [Privileged:ClusterAdmin]", func() {
 	ginkgo.It("should reject everything except leases [Alpha][Feature:AdmissionWebhookMatchConditions]", func(ctx context.Context) {
 		onlyAllowLeaseObjectMatchConditions := []admissionregistrationv1.MatchCondition{
 			{
-				Name:       "exclude-leases",
+				Name:       "only-leases",
 				Expression: `!(request.resource.group == "coordination.k8s.io" && request.resource.resource == "leases")`,
 			},
 		}
@@ -989,8 +989,6 @@ var _ = SIGDescribe("AdmissionWebhook [Privileged:ClusterAdmin]", func() {
 
 func newValidatingWebhookWithMatchConditions(
 	f *framework.Framework,
-	// f.namespace.name f.unique.name
-	// namespace, name string,
 	servicePort int32,
 	certCtx *certContext,
 	matchConditions []admissionregistrationv1.MatchCondition,
@@ -1026,7 +1024,7 @@ func newValidatingWebhookWithMatchConditions(
 				AdmissionReviewVersions: []string{"v1"},
 				// Scope the webhook to just the markers namespace
 				NamespaceSelector: &metav1.LabelSelector{
-					MatchLabels: map[string]string{f.UniqueName: "true"},
+					MatchLabels: map[string]string{v1.LabelMetadataName: f.UniqueName},
 				},
 				MatchConditions: matchConditions,
 			},
@@ -1070,7 +1068,7 @@ func newMutatingWebhookWithMatchConditions(
 				AdmissionReviewVersions: []string{"v1", "v1beta1"},
 				// Scope the webhook to just this namespace
 				NamespaceSelector: &metav1.LabelSelector{
-					MatchLabels: map[string]string{f.UniqueName: "true"},
+					MatchLabels: map[string]string{v1.LabelMetadataName: f.UniqueName},
 				},
 				MatchConditions: matchConditions,
 			},
